@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Language Translator - Text & Voice Translation</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-language"></i>
+                <h1>AI Translator</h1>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" id="themeToggle" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Mode Tabs -->
+            <div class="mode-tabs">
+                <button class="tab-btn active" data-mode="text">
+                    <i class="fas fa-font"></i> Text
+                </button>
+                <button class="tab-btn" data-mode="voice">
+                    <i class="fas fa-microphone"></i> Voice
+                </button>
+                <button class="tab-btn" data-mode="flashcards">
+                    <i class="fas fa-clone"></i> Flashcards
+                </button>
+                <button class="tab-btn" data-mode="conversation">
+                    <i class="fas fa-comments"></i> Conversation
+                </button>
+                <button class="tab-btn" data-mode="practice">
+                    <i class="fas fa-graduation-cap"></i> Practice
+                </button>
+            </div>
+
+            <!-- Text Translation Mode -->
+            <div class="mode-content active" id="textMode">
+                <div class="translation-container">
+                    <!-- Source Section -->
+                    <div class="translation-box">
+                        <div class="box-header">
+                            <div class="language-selector">
+                                <select id="sourceLang">
+                                    <option value="auto">Auto Detect</option>
+                                </select>
+                            </div>
+                            <div class="box-actions">
+                                <button class="action-btn" id="clearSource" title="Clear">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea
+                            id="sourceText"
+                            placeholder="Enter text to translate..."
+                            class="translation-input"
+                        ></textarea>
+                    </div>
+
+                    <!-- Translate Button -->
+                    <div class="translate-action">
+                        <button class="translate-btn" id="translateBtn">
+                            <i class="fas fa-language"></i>
+                            Translate
+                        </button>
+                    </div>
+
+                    <!-- Target Section -->
+                    <div class="translation-box">
+                        <div class="box-header">
+                            <div class="language-selector">
+                                <select id="targetLang">
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                            <div class="box-actions">
+                                <button class="action-btn" id="copyTranslation" title="Copy">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea
+                            id="targetText"
+                            placeholder="Translation will appear here..."
+                            class="translation-output"
+                            readonly
+                        ></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voice Translation Mode -->
+            <div class="mode-content" id="voiceMode">
+                <div class="voice-container">
+                    <!-- Voice Language Selectors -->
+                    <div class="box-header" style="justify-content:center; gap:16px;">
+                        <div class="language-selector">
+                            <select id="voiceSourceLang">
+                                <option value="auto">Auto Detect</option>
+                            </select>
+                            <span style="opacity:.6;">→</span>
+                            <select id="voiceTargetLang">
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="voice-controls">
+                        <button class="voice-btn record-btn" id="recordBtn">
+                            <i class="fas fa-microphone"></i>
+                            <span>Record</span>
+                        </button>
+                        <button class="voice-btn stop-btn" id="stopBtn" style="display: none;">
+                            <i class="fas fa-stop"></i>
+                            <span>Stop</span>
+                        </button>
+                    </div>
+                    <div class="voice-result">
+                        <div class="voice-text-box">
+                            <h3>Source Audio</h3>
+                            <p id="voiceSourceText">Your speech will appear here...</p>
+                        </div>
+                        <div class="voice-text-box">
+                            <h3>Translated Text</h3>
+                            <p id="voiceTranslatedText">Translation will appear here...</p>
+                            <button class="play-audio-btn" id="playVoiceTranslation">
+                                <i class="fas fa-play"></i> Play Translation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flashcards Mode (replaces Keywords) -->
+            <div class="mode-content" id="flashcardsMode">
+                <div class="flashcards-container" style="padding:20px;">
+                    <h3>Generate Flashcards</h3>
+                    <p>Paste or type text below and click "Generate" to create fill-in-the-blank flashcards.</p>
+                    <textarea id="flashcardsInput" style="width:100%; height:160px; padding:8px; font-size:14px;" placeholder="Enter text to generate flashcards from..."></textarea>
+                    <div style="margin-top:12px; display:flex; gap:8px; align-items:center;">
+                        <button id="generateFlashcardsBtn" class="translate-btn">Generate Flashcards</button>
+                        <label style="font-size:13px; color:#666; margin-left:8px;">Language:</label>
+                        <select id="flashcardsLanguage" style="min-width:120px;">
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <div style="margin-top:16px;">
+                        <h4>Flashcards</h4>
+                        <div id="flashcardsResult" style="padding:8px; background:#fff; border:1px solid #eee; border-radius:6px; min-height:40px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conversation Mode -->
+            <div class="mode-content" id="conversationMode">
+                <div class="conversation-container">
+                    <div class="conversation-controls">
+                        <div class="language-selector" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                            <select id="conversationLangA" style="min-width: 150px;">
+                                <option value="en">English</option>
+                            </select>
+                            <span style="opacity: 0.6; font-size: 18px;">↔</span>
+                            <select id="conversationLangB" style="min-width: 150px;">
+                                <option value="es">Spanish</option>
+                            </select>
+                        </div>
+                        <button class="start-conversation-btn" id="startConversationBtn">
+                            Start Conversation
+                        </button>
+                    </div>
+                    <div class="conversation-chat" id="conversationChat">
+                        <div class="chat-message system">
+                            <p>Select languages and click "Start Conversation" to begin</p>
+                        </div>
+                    </div>
+                    <div class="conversation-input-area">
+                        <input type="text" id="conversationInput" placeholder="Type your message...">
+                        <button class="send-btn" id="sendConversationBtn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Practice Mode -->
+            <div class="mode-content" id="practiceMode">
+                <div class="practice-container">
+                    <div class="practice-instructions">
+                        <h2>Pronunciation Practice</h2>
+                        <p>Practice pronouncing sentences and get instant feedback on your pronunciation accuracy.</p>
+                    </div>
+                    <div class="practice-target">
+                        <h3>Practice Sentence</h3>
+                        <input type="text" id="practiceTargetText" placeholder="Enter text to practice...">
+                        <select id="practiceLanguage">
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <div class="practice-controls">
+                        <button class="practice-btn" id="startPracticeBtn">
+                            <i class="fas fa-microphone"></i>
+                            Start Practice
+                        </button>
+                        <button class="practice-btn stop" id="stopPracticeBtn" style="display: none;">
+                            <i class="fas fa-stop"></i>
+                            Stop Recording
+                        </button>
+                    </div>
+                            <div class="practice-result" id="practiceResult" style="display: none;">
+                                <div class="score-display">
+                                    <div class="score-circle">
+                                        <span id="practiceScore">0</span>
+                                        <small>Score</small>
+                                    </div>
+                                </div>
+                        <div class="feedback-box">
+                            <h3>Feedback</h3>
+                            <p id="practiceFeedback"></p>
+                            <div class="improvements" id="practiceImprovements"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+            <div class="spinner"></div>
+            <p>Translating...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

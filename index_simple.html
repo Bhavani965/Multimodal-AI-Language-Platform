@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Translator</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #007bff;
+        }
+        .upload-area.dragover {
+            border-color: #007bff;
+            background: #f8f9ff;
+        }
+        .upload-text {
+            margin: 0;
+            color: #666;
+            font-size: 18px;
+        }
+        .file-input {
+            display: none;
+        }
+        .preview {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 5px;
+        }
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .controls select {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 5px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .result h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+        .message {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e7f3ff;
+            border-radius: 5px;
+            color: #004085;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Image Translator</h1>
+
+        <div id="status" class="message">Loading languages...</div>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-text">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #007bff; margin-bottom: 10px;"></i>
+                <br>Drag & drop an image here or click to upload
+            </div>
+            <input type="file" id="imageInput" class="file-input" accept="image/*">
+        </div>
+
+        <div class="preview" id="preview" style="display: none;">
+            <img id="previewImg" src="" alt="Preview">
+            <br><br>
+            <button class="btn" onclick="reset()">Choose Different Image</button>
+        </div>
+
+        <div class="controls" id="controls" style="display: none;">
+            <select id="targetLang">
+                <option value="en">English</option>
+            </select>
+            <button class="btn" id="translateBtn" onclick="translateImage()">Translate Image</button>
+        </div>
+
+        <div id="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        let languages = [];
+
+        // Load languages on startup
+        async function loadLanguages() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/languages`);
+                const data = await response.json();
+
+                if (data.success && data.languages) {
+                    languages = data.languages;
+                    const select = document.getElementById('targetLang');
+
+                    select.innerHTML = '';
+
+                    // Add English first
+                    const englishOption = new Option('English', 'en');
+                    select.add(englishOption);
+                    englishOption.selected = true;
+
+                    // Add other languages
+                    languages.forEach(lang => {
+                        if (lang.code !== 'en') {
+                            const option = new Option(lang.name, lang.code);
+                            select.add(option);
+                        }
+                    });
+
+                    document.getElementById('status').style.display = 'none';
+                    console.log(`Loaded ${languages.length} languages`);
+                } else {
+                    showError('Failed to load languages');
+                }
+            } catch (error) {
+                showError('Network error loading languages: ' + error.message);
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('status').innerHTML = `<div class="error">${message}</div>`;
+            document.getElementById('status').style.display = 'block';
+        }
+
+        function showMessage(message) {
+            document.getElementById('status').innerHTML = `<div class="message">${message}</div>`;
+            document.getElementById('status').style.display = 'block';
+        }
+
+        // File upload handling
+        document.getElementById('uploadArea').addEventListener('click', () => {
+            document.getElementById('imageInput').click();
+        });
+
+        document.getElementById('uploadArea').addEventListener('dragover', (e) => {
+            e.preventDefault();
+            document.getElementById('uploadArea').classList.add('dragover');
+        });
+
+        document.getElementById('uploadArea').addEventListener('dragleave', () => {
+            document.getElementById('uploadArea').classList.remove('dragover');
+        });
+
+        document.getElementById('uploadArea').addEventListener('drop', (e) => {
+            e.preventDefault();
+            document.getElementById('uploadArea').classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        document.getElementById('imageInput').addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('preview').style.display = 'block';
+                    document.getElementById('uploadArea').style.display = 'none';
+                    document.getElementById('controls').style.display = 'block';
+                    document.getElementById('status').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                showError('Please select an image file');
+            }
+        }
+
+        function reset() {
+            document.getElementById('imageInput').value = '';
+            document.getElementById('preview').style.display = 'none';
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('controls').style.display = 'none';
+            document.getElementById('result').style.display = 'none';
+        }
+
+        async function translateImage() {
+            const fileInput = document.getElementById('imageInput');
+            const targetLang = document.getElementById('targetLang').value;
+
+            const file = fileInput.files[0];
+            if (!file) {
+                showError('Please select an image first');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('translateBtn').disabled = true;
+            document.getElementById('translateBtn').textContent = 'Translating...';
+
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('target_lang', targetLang);
+            formData.append('source_lang', 'auto');
+
+            try {
+                showMessage('Processing image...');
+                const response = await fetch(`${API_BASE_URL}/ocr/translate`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                document.getElementById('translateBtn').disabled = false;
+                document.getElementById('translateBtn').textContent = 'Translate Image';
+
+                if (data.success) {
+                    const resultDiv = document.getElementById('result');
+                    resultDiv.innerHTML = `
+                        <div class="result" style="text-align: left;">
+                            <h3>Translation Result</h3>
+                            <p><strong>Extracted Text:</strong> ${data.extracted_text || 'No text found'}</p>
+                            <p><strong>Translated Text:</strong> ${data.translated_text || 'No translation available'}</p>
+                            <p><strong>Source Language:</strong> ${data.source_language || 'Unknown'}</p>
+                            <p><strong>Confidence:</strong> ${data.confidence ? data.confidence * 100 + '%' : 'N/A'}</p>
+                            ${data.message ? `<p><em>Note: ${data.message}</em></p>` : ''}
+                        </div>
+                    `;
+                    resultDiv.style.display = 'block';
+                    document.getElementById('status').style.display = 'none';
+                } else {
+                    showError('Translation failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                document.getElementById('translateBtn').disabled = false;
+                document.getElementById('translateBtn').textContent = 'Translate Image';
+                showError('Network error: ' + error.message);
+            }
+        }
+
+        // Load languages on page load
+        window.addEventListener('load', loadLanguages);
+    </script>
+</body>
+</html>
