@@ -1,4 +1,4 @@
-# AI Language Translator - Text & Voice Translation Application
+# Multimodal AI Language Learning Platform
 
 A comprehensive multi-language translation application with text, voice, and image translation capabilities, similar to Google Translate but with unique features like pronunciation practice and conversation mode.
 
@@ -428,4 +428,5 @@ For questions or issues, please contact the project maintainer.
 ---
 
 **Note**: This project uses the `googletrans` library which is an unofficial Python library for Google Translate. For production use, consider using the official Google Cloud Translation API.
+
 
