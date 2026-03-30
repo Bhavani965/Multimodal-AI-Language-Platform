@@ -1,13 +1,12 @@
 # Multimodal AI Language Learning Platform
 
-A comprehensive multi-language translation application with text, voice, and image translation capabilities, similar to Google Translate but with unique features like pronunciation practice and conversation mode.
+A comprehensive multi-language translation application with text, voice,  similar to Google Translate but with unique features like pronunciation practice and conversation mode.
 
 ## 🌟 Features
 
 ### Core Features
 - **Text Translation**: Translate text between 100+ languages
 - **Voice Translation**: Speech-to-text and text-to-speech translation
-- **Image Translation (OCR)**: Extract and translate text from images
 - **Language Detection**: Auto-detect source language
 - **Translation History**: Save and manage translation history
 - **Favorites**: Bookmark favorite translations
@@ -28,7 +27,6 @@ A comprehensive multi-language translation application with text, voice, and ima
 - Flask
 - Google Translate API (googletrans library)
 - Speech Recognition libraries
-- Tesseract OCR (for image translation)
 - SQLite (for database)
 
 ### Frontend Requirements
